@@ -15,7 +15,7 @@ import './RefStore.sol';
  *          // Primitive HI/LO game
  *          var win =  ((game.bet == 0) && (random < 45))
  *                  || ((game.bet > 0) && (random > 55));
- *          if (win) if (!game.player.send(game.value * 2)) throw;
+ *          if (win) if (!bountyToken.transfer(game.player, game.value * 2)) throw;
  *          // Do service reward 
  *          return serviceReward(game.player, game.value);
  *      }
@@ -67,9 +67,9 @@ contract Refedice is Signidice {
         var operator = referralStore.operatorOf(_player);
         var adviser  = referralStore.adviserOf(_player);
 
-        if (!gameDeveloper.send(reward)) throw;
-        if (!operator.send(reward)) throw;
-        if (!adviser.send(reward)) throw;
+        if (!bountyToken.transfer(gameDeveloper, reward)) throw;
+        if (!bountyToken.transfer(operator, reward)) throw;
+        if (!bountyToken.transfer(adviser, reward)) throw;
 
         return true;
     }

@@ -1,6 +1,7 @@
 pragma solidity ^0.4.4;
 
 import 'common/Object.sol';
+import 'token/ERC20.sol';
 
 /**
  * @dev Signature based dice contract
@@ -16,15 +17,21 @@ import 'common/Object.sol';
  *          // Primitive HI/LO game
  *          var win =  ((game.bet == 0) && (random < 45))
  *                  || ((game.bet > 0) && (random > 55));
- *          if (win) if (!game.player.send(game.value * 2)) throw;
+ *          if (win) if (!bountyToken.transfer(game.player, game.value * 2)) throw;
  *          return true;
  *      }
  *   }
  */
 contract Signidice is Object {
-    function Signidice(uint256 _bountyValue) payable {
+    function Signidice(address _token, uint256 _bountyValue) payable {
+        bountyToken = ERC20(_token);
         bountyValue = _bountyValue;
     }
+
+    /**
+     * @dev Dice bounty token
+     */
+    ERC20 public bountyToken;
 
     /**
      * @dev Dice bounty value
@@ -53,23 +60,26 @@ contract Signidice is Object {
 
     /**
      * @dev Dice roll by user 
-     * @param _bet User bet
+     * @param _bet Player bet
      * @param _random Some random number
+     * @param _value Player bet value in tokens
      * @notice Random number cannot be used twice.
      */
     function rollDice(
         uint256 _bet,
-        uint96  _random
+        uint96  _random,
+        uint256 _value
     )
-        payable
         returns (uint256)
     {
         if (usedRandom[msg.sender][_random]) throw;
         usedRandom[msg.sender][_random] = true;
 
+        if (!bountyToken.transferFrom(msg.sender, this, _value)) throw;
+
         var id = games.length;
         var random = bytes32(uint256(msg.sender) << 96 | _random);
-        games.push(Game(msg.sender, msg.value, _bet, random, false));
+        games.push(Game(msg.sender, _value, _bet, random, false));
         gamesOf[msg.sender].push(id);
         RollDice(id, random);
         return id;
@@ -103,7 +113,7 @@ contract Signidice is Object {
         if (ecrecover(game.random, _v, _r, _s) == owner) {
             if (!playerReward(_id, uint256(sha3(_v, _r, _s))))
                 throw;
-        } else if (!game.player.send(bountyValue)) throw;
+        } else if (!bountyToken.transfer(game.player, bountyValue)) throw;
     }
 
     /**
