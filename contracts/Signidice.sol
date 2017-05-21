@@ -1,4 +1,5 @@
-pragma solidity ^0.4.9;
+pragma solidity ^0.4.4;
+
 import 'common/Object.sol';
 
 /**
@@ -96,13 +97,13 @@ contract Signidice is Object {
         var game = games[_id];
         // Check for game is open
         if (game.closed) throw;
+        // Close the game
+        game.closed = true;
         // Casino falcify check
         if (ecrecover(game.random, _v, _r, _s) == owner) {
             if (!playerReward(_id, uint256(sha3(_v, _r, _s))))
                 throw;
         } else if (!game.player.send(bountyValue)) throw;
-        // Close the game
-        game.closed = true;
     }
 
     /**
