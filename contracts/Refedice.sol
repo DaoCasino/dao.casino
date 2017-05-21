@@ -25,10 +25,10 @@ contract Refedice is Signidice {
     /**
      * @dev Profit distribution:
      * +-----+-----------------------
-     * | 20% | Game developer 
-     * | 20% | Player adviser (from RefStore contract) 
-     * | 20% | Game operator (from RefStore contract) 
-     * | 40% | Stay on game contract
+     * | 25% | Game developer 
+     * | 25% | Player adviser (from RefStore contract) 
+     * | 25% | Game operator (from RefStore contract) 
+     * | 25% | Stay on game contract
      * +-----+-----------------------
      */
 
@@ -62,7 +62,7 @@ contract Refedice is Signidice {
      */
     function serviceReward(address _player, uint256 _value) internal returns (bool) {
         var profit   = _value * houseEdge / 100;
-        var reward   = profit * 20 / 100;
+        var reward   = profit * 25 / 100;
 
         var operator = referralStore.operatorOf(_player);
         var adviser  = referralStore.adviserOf(_player);
