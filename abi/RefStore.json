@@ -1,0 +1,1 @@
+[{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"adviserOf","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"operatorOf","outputs":[{"name":"","type":"address"}],"payable":false,"type":"function"}]
