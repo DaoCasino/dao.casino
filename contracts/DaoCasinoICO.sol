@@ -32,6 +32,50 @@ contract DaoCasinoICO is Crowdfunding {
         uint256 _reductionValue
     ) Crowdfunding(_fund, _bounty, _reference, _startBlock, _stopBlock, _minValue, _maxValue, _scale, _startRatio, _reductionStep, _reductionValue) {}
 
+    // ONLY FOR 16.44s block time
+    uint256 public constant BLOCKS_IN_DAY = 5256;
+
+    /**
+     * @dev Calculate bounty value by static equation
+     * @param _value Input donation value
+     * @param _block Input block number
+     * @return Bounty value
+     */
+    function bountyValue(uint256 _value, uint256 _block) constant returns (uint256) {
+        uint256 ratio = 0;
+        uint256 start = config.startBlock;
+
+        // 1st day bounty
+        if (_block >= start && _block < start + BLOCKS_IN_DAY)
+            ratio = 2000;
+
+        // [2; 15) day bounty
+        if (_block >= start + BLOCKS_IN_DAY && _block < start + 15*BLOCKS_IN_DAY)
+            ratio = 1800;
+
+        // [15; 18) day bounty
+        if (_block >= start + 15*BLOCKS_IN_DAY && _block < start + 18*BLOCKS_IN_DAY)
+            ratio = 1700;
+
+        // [18; 21) day bounty
+        if (_block >= start + 18*BLOCKS_IN_DAY && _block < start + 21*BLOCKS_IN_DAY)
+            ratio = 1600;
+
+        // [21; 23) day bounty
+        if (_block >= start + 21*BLOCKS_IN_DAY && _block < start + 23*BLOCKS_IN_DAY)
+            ratio = 1500;
+
+        // [23; 26) day bounty
+        if (_block >= start + 23*BLOCKS_IN_DAY && _block < start + 26*BLOCKS_IN_DAY)
+            ratio = 1400;
+
+        // [26; 29) day bounty
+        if (_block >= start + 26*BLOCKS_IN_DAY && _block <= config.stopBlock)
+            ratio = 1300;
+
+        return _value * ratio / config.bountyScale;
+    }
+
     /**
      * @dev Withdrawal balance on successfull finish
      */
