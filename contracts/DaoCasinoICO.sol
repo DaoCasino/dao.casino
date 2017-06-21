@@ -88,13 +88,17 @@ contract DaoCasinoICO is Crowdfunding {
     }
 
     /**
+     * @dev Withdrawal Ethereum balance
+     */
+    function withdrawEth() onlyOwner {
+        if (!fund.send(this.balance)) throw;
+    }
+
+    /**
      * @dev Withdrawal balance on successfull finish
      */
     function withdraw() onlySuccess {
         withdrawDone = true;
-
-        if (msg.sender != fund) throw;
-        if (!fund.send(this.balance)) throw;
 
         var bountyVal = bounty.totalSupply() / 76 * 26; 
         bounty.emission(bountyVal);
