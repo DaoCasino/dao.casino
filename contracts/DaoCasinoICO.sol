@@ -77,6 +77,17 @@ contract DaoCasinoICO is Crowdfunding {
     }
 
     /**
+     * @dev Crowdfunding success checks
+     */
+    modifier onlySuccess {
+        bool isSuccess = totalFunded >= config.minValue
+                      && block.number > config.stopBlock
+                      || totalFunded == config.maxValue;
+        if (!isSuccess) throw;
+        _;
+    }
+
+    /**
      * @dev Withdrawal balance on successfull finish
      */
     function withdraw() onlySuccess {
