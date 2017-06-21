@@ -6,7 +6,7 @@ contract DaoCasinoICO is Crowdfunding {
     /**
      * @dev Crowdfunding contract initial 
      * @param _fund Destination account address
-     * @param _bounty Bounty token address
+     * @param _bounty Bounty token address (erc20 with emission function)
      * @param _reference Reference documentation link
      * @param _startBlock Funding start block number
      * @param _stopBlock Funding stop block nubmer
@@ -95,12 +95,12 @@ contract DaoCasinoICO is Crowdfunding {
     }
 
     /**
-     * @dev Withdrawal balance on successfull finish
+     * @dev 30% emission on success
      */
     function withdraw() onlySuccess {
         withdrawDone = true;
 
-        var bountyVal = bounty.totalSupply() / 76 * 26; 
+        var bountyVal = bounty.totalSupply() / 70 * 30; 
         bounty.emission(bountyVal);
         if (!bounty.transfer(fund, bountyVal)) throw;
     }
