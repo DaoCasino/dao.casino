@@ -1,4 +1,4 @@
-pragma solidity ^0.4.4;
+pragma solidity ^0.4.11;
 
 import 'foundation/Crowdfunding.sol';
 
@@ -29,11 +29,46 @@ contract DaoCasinoICO is Crowdfunding {
         uint256 _scale,
         uint256 _startRatio,
         uint256 _reductionStep,
-        uint256 _reductionValue
-    ) Crowdfunding(_fund, _bounty, _reference, _startBlock, _stopBlock, _minValue, _maxValue, _scale, _startRatio, _reductionStep, _reductionValue) {}
+        uint256 _reductionValue,
+        uint256 _minDonation
+    ) Crowdfunding(_fund, _bounty, _reference, _startBlock, _stopBlock, _minValue, _maxValue, _scale, _startRatio, _reductionStep, _reductionValue) {
+        minDonation = _minDonation;
+    }
+
+    /**
+     * @dev Receive Ether token and charge bounty
+     */
+    function () payable onlyRunning {
+        // Minimal donation check
+        if (msg.value < minDonation) throw;
+
+        ReceivedEther(msg.sender, msg.value);
+
+        totalFunded           += msg.value;
+        donations[msg.sender] += msg.value;
+
+        var bountyVal = bountyValue(msg.value, block.number);
+        var bountySupply = bounty.totalSupply();
+
+        // Bounty emission for crowdfunding contract
+        //   is needed for bounty totalSupply accounting
+        bounty.emission(bountyVal);
+
+        // Correct emission check, result should be more
+        if (bountySupply == bounty.totalSupply()) throw;
+
+        // Append new participant
+        if (bounties[msg.sender] == 0)
+            participants.push(msg.sender);
+
+        // Charge bounties
+        bounties[msg.sender] += bountyVal;
+    }
 
     // ONLY FOR 16.44s block time
     uint256 public constant BLOCKS_IN_DAY = 5256;
+
+    uint256 public minDonation;
 
     /**
      * @dev Calculate bounty value by static equation
@@ -98,12 +133,32 @@ contract DaoCasinoICO is Crowdfunding {
      * @dev 30% emission on success
      */
     function withdraw() onlySuccess {
+        if (withdrawDone) throw;
         withdrawDone = true;
 
-        var bountyVal = bounty.totalSupply() / 70 * 30; 
+        var bountyVal = bounty.totalSupply() * 30 / 70;
         bounty.emission(bountyVal);
         if (!bounty.transfer(fund, bountyVal)) throw;
     }
 
     bool withdrawDone = false;
+    mapping(address => uint256) public bounties;
+    address[] public participants;
+
+    /**
+     * @dev Transfer paritication bounty for account
+     * @param _participant Account address
+     */
+    function getBounty(address _participant) onlySuccess {
+        var bountyVal = bounties[_participant];
+        if (bountyVal == 0) throw;
+
+        bounties[_participant] = 0;
+        if (!bounty.transfer(_participant, bountyVal)) throw;
+    }
+
+    /**
+     * @dev Simple way to get sender account bounty
+     */
+    function getMyBounty() { getBounty(msg.sender); }
 }
